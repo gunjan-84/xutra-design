@@ -195,8 +195,8 @@ input { font-family: inherit; }
 .bottom-nav {
   flex-shrink: 0;
   display: flex; justify-content: space-around; align-items: flex-start;
-  height: 88px;
-  padding-top: 6px; padding-bottom: 28px;
+  padding-top: 6px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   background: var(--color-surface);
   border-top: 1px solid var(--color-outline-variant);
   position: relative;
@@ -322,7 +322,7 @@ input { font-family: inherit; }
   position: absolute; bottom: 0; left: 0; right: 0;
   background: var(--color-surface);
   border-top: 1px solid var(--color-outline-variant);
-  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 24px);
+  padding: var(--spacing-md) var(--spacing-md) calc(max(env(safe-area-inset-bottom, 0px), 8px) + var(--spacing-md));
   z-index: 30;
 }
 

@@ -9,7 +9,7 @@ const homeIndices = [
   { name: "FINNIFTY", value: "20,884.55", pct: 0.41, abs: "+85.20" },
 ];
 
-const MoverCard = ({ title, items, positive, go }) => (
+const MoverCard = ({ title, items, positive, go, handle }) => (
   <div style={{
     background: "var(--color-surface-container-lowest)",
     border: "1px solid var(--color-outline-variant)",
@@ -22,8 +22,11 @@ const MoverCard = ({ title, items, positive, go }) => (
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
       <span style={{ fontSize: 16, fontWeight: 600 }}>{title}</span>
-      <Icon name={positive ? "trending_up" : "trending_down"} size={18}
-            color={positive ? "var(--color-secondary)" : "var(--color-error)"} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Icon name={positive ? "trending_up" : "trending_down"} size={18}
+              color={positive ? "var(--color-secondary)" : "var(--color-error)"} />
+        {handle}
+      </div>
     </div>
     <div className="list-divide">
       {items.map(w => {
@@ -52,93 +55,254 @@ const MoverCard = ({ title, items, positive, go }) => (
   </div>
 );
 
+// ─────────────────────────────────────────
+// Index strip variants
+// Synthetic sparkline path — gentle trend in the direction of pct
+function indexSparkPath(pct, w, h) {
+  const n = 14;
+  const seed = Math.abs(pct) * 100 + 7;
+  const slope = pct / n;
+  let y = h * 0.55 - slope * (n / 2);
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const noise = ((Math.sin(seed + i * 1.7) + Math.cos(seed * 0.3 + i)) * 0.5) * (h * 0.18);
+    y += slope * 1.4 + noise * 0.18;
+    y = Math.max(h * 0.18, Math.min(h * 0.82, y));
+    pts.push([(i / (n - 1)) * w, y]);
+  }
+  return pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+}
+
+const IndexHero = ({ i }) => {
+  const up = i.pct >= 0;
+  return (
+    <div className="dark-hero" style={{ minWidth: 160, padding: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+      <span className="font-label-caps" style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>{i.name}</span>
+      <span className="font-data-mono" style={{ fontSize: 17, fontWeight: 700 }}>{i.value}</span>
+      <span style={{ fontSize: 11, fontWeight: 600, color: up ? "var(--color-secondary)" : "var(--color-error)" }}>
+        {i.abs} ({up ? "+" : ""}{i.pct.toFixed(2)}%)
+      </span>
+    </div>
+  );
+};
+
+const IndexTile = ({ i }) => {
+  const up = i.pct >= 0;
+  const accent = up ? "var(--color-secondary)" : "var(--color-error)";
+  return (
+    <div style={{
+      minWidth: 156, padding: 14,
+      background: "var(--color-surface-container-lowest)",
+      border: "1px solid var(--color-outline-variant)",
+      borderRadius: 14,
+      display: "flex", flexDirection: "column", gap: 6,
+      position: "relative", overflow: "hidden",
+    }}>
+      <span style={{ position: "absolute", left: 0, top: 12, bottom: 12, width: 3, borderRadius: 2, background: accent }} />
+      <span className="font-label-caps" style={{ color: "var(--color-on-surface-variant)", fontSize: 10, paddingLeft: 8 }}>{i.name}</span>
+      <span className="font-data-mono" style={{ fontSize: 18, fontWeight: 700, paddingLeft: 8 }}>{i.value}</span>
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: 4,
+        fontSize: 11, fontWeight: 700, color: accent, paddingLeft: 8,
+      }}>
+        <span aria-hidden style={{ fontSize: 9 }}>{up ? "▲" : "▼"}</span>
+        {i.abs} · {up ? "+" : ""}{i.pct.toFixed(2)}%
+      </span>
+    </div>
+  );
+};
+
+const IndexSpark = ({ i }) => {
+  const up = i.pct >= 0;
+  const accent = up ? "var(--color-secondary)" : "var(--color-error)";
+  const w = 168, h = 70;
+  const d = indexSparkPath(i.pct, w, h);
+  return (
+    <div style={{
+      minWidth: 188, padding: "12px 14px",
+      background: "var(--color-surface-container-lowest)",
+      border: "1px solid var(--color-outline-variant)",
+      borderRadius: 14,
+      display: "flex", flexDirection: "column", gap: 4,
+      position: "relative", overflow: "hidden",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span className="font-label-caps" style={{ color: "var(--color-on-surface-variant)", fontSize: 10 }}>{i.name}</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>{up ? "+" : ""}{i.pct.toFixed(2)}%</span>
+      </div>
+      <span className="font-data-mono" style={{ fontSize: 18, fontWeight: 700 }}>{i.value}</span>
+      <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={42} style={{ marginTop: 2, display: "block" }} preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={`gr-${i.name.replace(/\s+/g,'')}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stopColor={accent} stopOpacity="0.28" />
+            <stop offset="100%" stopColor={accent} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={`url(#gr-${i.name.replace(/\s+/g,'')})`} />
+        <path d={d} fill="none" stroke={accent} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+};
+
+const IndexTicker = ({ indices }) => (
+  <div style={{
+    display: "flex", alignItems: "stretch",
+    background: "var(--color-surface-container-lowest)",
+    border: "1px solid var(--color-outline-variant)",
+    borderRadius: 12,
+    overflowX: "auto",
+  }} className="no-scrollbar">
+    {indices.map((i, idx) => {
+      const up = i.pct >= 0;
+      const accent = up ? "var(--color-secondary)" : "var(--color-error)";
+      return (
+        <div key={i.name}
+             style={{
+               padding: "10px 14px",
+               display: "flex", flexDirection: "column", gap: 2,
+               borderLeft: idx === 0 ? "none" : "1px solid var(--color-outline-variant)",
+               flex: "1 0 auto",
+             }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 9999, background: accent }} />
+            <span className="font-label-caps" style={{ fontSize: 10, color: "var(--color-on-surface-variant)" }}>{i.name}</span>
+          </div>
+          <span className="font-data-mono" style={{ fontSize: 15, fontWeight: 700 }}>{i.value}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: accent }}>
+            {up ? "+" : ""}{i.pct.toFixed(2)}%
+          </span>
+        </div>
+      );
+    })}
+  </div>
+);
+
+const HOME_SECTIONS_DEFAULT_ORDER = ["indices", "funds", "gainers", "losers", "health"];
+
 const HomeScreen = ({ go }) => {
+  const ctx = React.useContext(window.XutraContext);
+  const indexStyle = ctx.tweaks?.indexStyle || "hero";
   const gainers = [...watchlist].sort((a, b) => b.changePct - a.changePct).slice(0, 3);
   const losers = [...watchlist].sort((a, b) => a.changePct - b.changePct).slice(0, 3);
 
-  return (
-    <div className="app-screen">
-      <TopBar />
-      <main className="app-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        {/* Greeting */}
-        <section style={{ padding: "0 16px" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Good Morning</h1>
-          <p style={{ fontSize: 13, color: "var(--color-on-surface-variant)", margin: "4px 0 0" }}>
-            Markets are open · NSE & BSE
-          </p>
-        </section>
+  const [order, setOrder] = window.usePersistedOrder("xutra.home.order", HOME_SECTIONS_DEFAULT_ORDER);
+  const [drag, setDrag] = React.useState({ active: null, over: null });
 
-        {/* Indices strip */}
-        <section>
+  const Handle = window.DragHandle;
+
+  const sections = {
+    indices: (
+      <div>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "0 16px 8px",
+        }}>
+          <span className="font-label-caps" style={{
+            fontSize: 11, color: "var(--color-on-surface-variant)",
+          }}>Indices</span>
+          <Handle />
+        </div>
+        {indexStyle === "ticker" ? (
+          <div style={{ padding: "0 16px" }}>
+            <IndexTicker indices={homeIndices} />
+          </div>
+        ) : (
           <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, padding: "0 16px" }}
                className="no-scrollbar">
             {homeIndices.map(i => {
-              const up = i.pct >= 0;
-              return (
-                <div key={i.name} className="dark-hero" style={{ minWidth: 160, padding: 16, display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span className="font-label-caps" style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>{i.name}</span>
-                  <span className="font-data-mono" style={{ fontSize: 17, fontWeight: 700 }}>{i.value}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: up ? "var(--color-secondary)" : "var(--color-error)" }}>
-                    {i.abs} ({up ? "+" : ""}{i.pct.toFixed(2)}%)
-                  </span>
-                </div>
-              );
+              if (indexStyle === "tile")  return <IndexTile  key={i.name} i={i} />;
+              if (indexStyle === "spark") return <IndexSpark key={i.name} i={i} />;
+              return <IndexHero key={i.name} i={i} />;
             })}
           </div>
-        </section>
-
-        {/* Funds */}
-        <section style={{ padding: "0 16px" }}>
-          <div style={{
-            borderRadius: 14, padding: 16,
-            border: "1px solid var(--color-outline-variant)",
-            background: "var(--color-surface-container-lowest)",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 17, fontWeight: 700 }}>Funds</span>
+        )}
+      </div>
+    ),
+    funds: (
+      <section style={{ padding: "0 16px" }}>
+        <div style={{
+          borderRadius: 14, padding: 16,
+          border: "1px solid var(--color-outline-variant)",
+          background: "var(--color-surface-container-lowest)",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 17, fontWeight: 700 }}>Funds</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button onClick={() => go({ name: "account" })}
                       className="font-label-caps"
                       style={{ background: "transparent", border: "none", color: "var(--color-primary)", cursor: "pointer", padding: 0 }}>
                 MANAGE
               </button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                ["Available", "₹1,42,084", "var(--color-secondary)"],
-                ["Used Margin", "₹38,420", "var(--color-on-surface)"],
-                ["Opening Bal.", "₹1,80,504", "var(--color-on-surface)"],
-              ].map(([l, v, c]) => (
-                <div key={l} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span className="font-label-caps" style={{ fontSize: 10, color: "var(--color-on-surface-variant)" }}>{l}</span>
-                  <span className="font-data-mono" style={{ fontSize: 15, fontWeight: 600, color: c }}>{v}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
-              <button className="btn-primary">Add Funds</button>
-              <button className="btn-outline">Withdraw</button>
+              <Handle />
             </div>
           </div>
-        </section>
-
-        {/* Movers */}
-        <section style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12, padding: "0 16px" }}>
-          <MoverCard title="Top Gainers" items={gainers} positive go={go} />
-          <MoverCard title="Top Losers" items={losers} positive={false} go={go} />
-        </section>
-
-        {/* Market health */}
-        <section style={{ margin: "0 16px" }}>
-          <div className="card" style={{ padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 16, fontWeight: 600 }}>Market Health</span>
-              <span style={{ fontSize: 13, color: "var(--color-on-surface-variant)" }}>32 Advancing · 18 Declining</span>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+            {[
+              ["Available", "₹1,42,084", "var(--color-secondary)"],
+              ["Used Margin", "₹38,420", "var(--color-on-surface)"],
+              ["Opening Bal.", "₹1,80,504", "var(--color-on-surface)"],
+            ].map(([l, v, c]) => (
+              <div key={l} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span className="font-label-caps" style={{ fontSize: 10, color: "var(--color-on-surface-variant)" }}>{l}</span>
+                <span className="font-data-mono" style={{ fontSize: 15, fontWeight: 600, color: c }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+            <button className="btn-primary">Add Funds</button>
+            <button className="btn-outline">Withdraw</button>
+          </div>
+        </div>
+      </section>
+    ),
+    gainers: (
+      <section style={{ padding: "0 16px" }}>
+        <MoverCard title="Top Gainers" items={gainers} positive go={go} handle={<Handle />} />
+      </section>
+    ),
+    losers: (
+      <section style={{ padding: "0 16px" }}>
+        <MoverCard title="Top Losers" items={losers} positive={false} go={go} handle={<Handle />} />
+      </section>
+    ),
+    health: (
+      <section style={{ margin: "0 16px" }}>
+        <div className="card" style={{ padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>Market Health</span>
+            <span style={{ fontSize: 13, color: "var(--color-on-surface-variant)" }}>32 Advancing · 18 Declining</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ display: "flex", height: 8, width: 128, borderRadius: 9999, overflow: "hidden", background: "color-mix(in oklab, var(--color-error) 20%, transparent)" }}>
               <div style={{ background: "var(--color-secondary)", height: "100%", width: "64%" }} />
             </div>
+            <Handle />
           </div>
+        </div>
+      </section>
+    ),
+  };
+
+  return (
+    <div className="app-screen">
+      <TopBar />
+      <main className="app-main" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* Greeting (not reorderable) */}
+        <section style={{ padding: "0 16px" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Good Morning</h1>
+          <p style={{ fontSize: 13, color: "var(--color-on-surface-variant)", margin: "4px 0 0" }}>
+            Markets are open · NSE &amp; BSE
+          </p>
         </section>
+
+        {order.map(id => (
+          <window.Reorderable key={id} id={id}
+                              drag={drag} setDrag={setDrag}
+                              order={order} setOrder={setOrder}>
+            {sections[id]}
+          </window.Reorderable>
+        ))}
       </main>
       <BottomNav active="home" go={go} />
     </div>

@@ -130,9 +130,9 @@ const Field = ({ label, children }) => (
 // ─────────────────────────────────────────
 // BrokerLogo — renders the real broker mark on a white tile.
 // Falls back to a letter monogram on image-load failure (e.g. CDN unreachable in preview).
-const BrokerLogo = ({ broker, size = 44, dim = false, square = false }) => {
+const BrokerLogo = ({ broker, size = 44, dim = false, square = false, radius: radiusOverride }) => {
   const [errored, setErrored] = React.useState(false);
-  const radius = square ? size * 0.22 : size * 0.28;
+  const radius = radiusOverride != null ? radiusOverride : (square ? size * 0.22 : size * 0.28);
 
   if (errored || !broker.logo) {
     return (

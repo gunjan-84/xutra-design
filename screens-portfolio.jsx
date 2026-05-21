@@ -125,7 +125,7 @@ const BrokerFilterRow = ({ brokers, value, onChange, counts }) => {
           <button key={b.id} onClick={() => onChange(b.id)}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "6px 12px 6px 6px", borderRadius: 9999,
+                    padding: "8px 14px", borderRadius: 10,
                     border: "1px solid " + (active ? "var(--color-primary)" : "var(--color-outline-variant)"),
                     background: active ? "color-mix(in oklab, var(--color-primary) 10%, var(--color-surface))" : "var(--color-surface)",
                     color: active ? "var(--color-primary)" : "var(--color-on-surface)",
@@ -133,16 +133,10 @@ const BrokerFilterRow = ({ brokers, value, onChange, counts }) => {
                     fontSize: 13, fontWeight: 600,
                     minHeight: 36,
                   }}>
-            {b.id === "all" ? (
-              <span style={{
-                width: 24, height: 24, borderRadius: 9999,
-                background: active ? "var(--color-primary)" : "var(--color-surface-container-high)",
-                color: active ? "#fff" : "var(--color-on-surface-variant)",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                fontSize: 12, fontWeight: 800,
-              }}>∗</span>
-            ) : (
-              <window.BrokerLogo broker={b} size={24} square />
+            {b.id !== "all" && b.logo && (
+              <img src={b.logo} alt=""
+                   style={{ width: 18, height: 18, objectFit: "contain", display: "block", flexShrink: 0 }}
+                   onError={(e) => { e.currentTarget.style.display = "none"; }} />
             )}
             <span>{b.name}</span>
             <span style={{
@@ -247,14 +241,6 @@ const PortfolioScreen = ({ go }) => {
 
         {tab === "holdings" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Holdings</h2>
-              <span className="font-label-caps" style={{ color: "var(--color-on-surface-variant)" }}>
-                {filteredHoldings.length} {filteredHoldings.length === 1 ? "stock" : "stocks"}
-                {brokerFilter !== "all" && ` · ${brokers.find(b=>b.id===brokerFilter)?.name}`}
-              </span>
-            </div>
-
             {holdingsOrder.filter(id => id !== "allocation" || brokerFilter === "all").map(id => (
               <Reorderable key={id} id={id}
                            drag={drag} setDrag={setDrag}
@@ -262,32 +248,36 @@ const PortfolioScreen = ({ go }) => {
                 {id === "summary" && (
                   <section style={{
                     position: "relative",
-                    background: "var(--color-primary)", color: "var(--color-on-primary)",
+                    background: "var(--color-surface-container-high)",
+                    color: "var(--color-on-surface)",
                     borderRadius: 18, padding: 20,
-                    boxShadow: "0 10px 30px color-mix(in oklab, var(--color-primary) 30%, transparent)",
+                    border: "1px solid var(--color-outline-variant)",
                   }}>
-                    <div style={{ position: "absolute", top: 8, right: 8, color: "#fff" }}><DragHandle /></div>
+                    <div style={{ position: "absolute", top: 8, right: 8, color: "var(--color-on-surface-variant)" }}><DragHandle /></div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
-                        <p className="font-label-caps" style={{ margin: 0, opacity: 0.8 }}>Current Value</p>
+                        <p className="font-label-caps" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>Current Value</p>
                         <p className="font-data-mono" style={{ fontSize: 28, fontWeight: 800, margin: "4px 0 0" }}>{fmtP(hCurrent)}</p>
                       </div>
                       <div style={{ textAlign: "right", marginRight: 24 }}>
-                        <p className="font-label-caps" style={{ margin: 0, opacity: 0.8 }}>Invested</p>
+                        <p className="font-label-caps" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>Invested</p>
                         <p className="font-data-mono" style={{ fontSize: 15, margin: "4px 0 0" }}>{fmtP(hInvested)}</p>
                       </div>
                     </div>
                     <div style={{ marginTop: 24, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
                       <div>
-                        <p className="font-label-caps" style={{ margin: 0, opacity: 0.8 }}>Overall P&amp;L</p>
+                        <p className="font-label-caps" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>Overall P&amp;L</p>
                         <p className="font-data-mono" style={{ fontSize: 22, fontWeight: 700, margin: "4px 0 0",
-                                                               color: hUp ? "var(--color-primary-fixed-dim)" : "#fff" }}>
+                                                               color: hUp ? "var(--color-secondary)" : "var(--color-error)" }}>
                           {hUp ? "+" : ""}{fmtP(hPnl)}
                         </p>
                       </div>
                       <span style={{
                         padding: "6px 12px", borderRadius: 9999,
-                        background: "rgba(255,255,255,0.18)",
+                        background: hUp
+                          ? "color-mix(in oklab, var(--color-secondary) 14%, transparent)"
+                          : "color-mix(in oklab, var(--color-error) 14%, transparent)",
+                        color: hUp ? "var(--color-secondary)" : "var(--color-error)",
                         fontSize: 13, fontWeight: 700,
                       }}>{hUp ? "+" : ""}{hPct.toFixed(2)}%</span>
                     </div>
@@ -364,14 +354,6 @@ const PortfolioScreen = ({ go }) => {
 
         {tab === "positions" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Positions</h2>
-              <span className="font-label-caps" style={{ color: "var(--color-on-surface-variant)" }}>
-                {filteredPositions.length} open · Intraday
-                {brokerFilter !== "all" && ` · ${brokers.find(b=>b.id===brokerFilter)?.name}`}
-              </span>
-            </div>
-
             {positionsOrder.map(id => (
               <Reorderable key={id} id={id}
                            drag={drag} setDrag={setDrag}
@@ -387,7 +369,7 @@ const PortfolioScreen = ({ go }) => {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
                         <p className="font-label-caps" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>Current Value</p>
-                        <p className="font-data-mono" style={{ fontSize: 24, fontWeight: 800, margin: "4px 0 0" }}>{fmtP(pCurrent)}</p>
+                        <p className="font-data-mono" style={{ fontSize: 28, fontWeight: 800, margin: "4px 0 0" }}>{fmtP(pCurrent)}</p>
                       </div>
                       <div style={{ textAlign: "right", marginRight: 24 }}>
                         <p className="font-label-caps" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>Invested</p>
@@ -518,4 +500,4 @@ const BrokerAllocation = ({ holdings, brokers }) => {
   );
 };
 
-Object.assign(window, { PortfolioScreen, BrokerFilterRow, BrokerBadge });
+Object.assign(window, { PortfolioScreen, BrokerFilterRow, BrokerBadge, Reorderable, DragHandle, usePersistedOrder });

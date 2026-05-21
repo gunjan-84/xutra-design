@@ -2,7 +2,8 @@
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "palette": ["#7c3aed", "#9b6cf2", "#d4c0ff"],
   "dark": false,
-  "forceHold": false
+  "forceHold": false,
+  "indexStyle": "hero"
 }/*EDITMODE-END*/;
 
 // Each palette: [primary, container, dim]. All in the purple→pink gradient,
@@ -91,23 +92,20 @@ const App = () => {
   const canGoBack = history.length > 0;
 
   return (
-    <XutraContext.Provider value={{ go, goTab, goReplace, goBack, openSettings, canGoBack, brokers, feed, feedBroker }}>
-      <window.IOSDevice width={402} height={874} dark={tweaks.dark}>
-        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden" }}>
-          <div style={{ height: 62, flexShrink: 0, background: "var(--color-surface)" }} />
-          <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
-            {content}
-          </div>
-          <window.SettingsDrawer
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            brokers={brokers}
-            setBroker={setBroker}
-            feed={feed}
-            setFeed={setFeed}
-          />
+    <XutraContext.Provider value={{ go, goTab, goReplace, goBack, openSettings, canGoBack, brokers, feed, feedBroker, tweaks }}>
+      <div style={{ position: "relative", width: "100%", height: "100dvh", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden" }}>
+        <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+          {content}
         </div>
-      </window.IOSDevice>
+        <window.SettingsDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          brokers={brokers}
+          setBroker={setBroker}
+          feed={feed}
+          setFeed={setFeed}
+        />
+      </div>
 
       <window.TweaksPanel title="Tweaks">
         <window.TweakSection label="Color theme">
@@ -121,6 +119,20 @@ const App = () => {
             label="Dark mode"
             value={tweaks.dark}
             onChange={(v) => setTweak('dark', v)}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection label="Home indices">
+          <window.TweakSelect
+            label="Style"
+            value={tweaks.indexStyle}
+            options={[
+              { value: "hero",   label: "Dark hero"   },
+              { value: "tile",   label: "Light tile"  },
+              { value: "spark",  label: "Sparkline"   },
+              { value: "ticker", label: "Ticker bar"  },
+            ]}
+            onChange={(v) => setTweak('indexStyle', v)}
           />
         </window.TweakSection>
 

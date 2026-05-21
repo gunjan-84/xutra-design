@@ -93,22 +93,19 @@ const App = () => {
 
   return (
     <XutraContext.Provider value={{ go, goTab, goReplace, goBack, openSettings, canGoBack, brokers, feed, feedBroker, tweaks }}>
-      <window.IOSDevice width={402} height={874} dark={tweaks.dark}>
-        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden" }}>
-          <div style={{ height: 62, flexShrink: 0, background: "var(--color-surface)" }} />
-          <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
-            {content}
-          </div>
-          <window.SettingsDrawer
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            brokers={brokers}
-            setBroker={setBroker}
-            feed={feed}
-            setFeed={setFeed}
-          />
+      <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", paddingLeft: "env(safe-area-inset-left)", paddingRight: "env(safe-area-inset-right)" }}>
+        <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+          {content}
         </div>
-      </window.IOSDevice>
+        <window.SettingsDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          brokers={brokers}
+          setBroker={setBroker}
+          feed={feed}
+          setFeed={setFeed}
+        />
+      </div>
 
       <window.TweaksPanel title="Tweaks">
         <window.TweakSection label="Color theme">

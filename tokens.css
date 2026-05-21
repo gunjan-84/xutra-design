@@ -14,13 +14,13 @@
   --color-outline: #7d758c;
   --color-outline-variant: #c8c3d7;
 
-  /* Primary (violet by default; overridden via Tweaks panel) */
-  --color-primary: #7c3aed;
-  --color-primary-container: #9b6cf2;
+  /* Primary (overridden via Tweaks panel) */
+  --color-primary: #e16ceb;
+  --color-primary-container: #e890f0;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #f3eeff;
-  --color-primary-fixed-dim: #d4c0ff;
-  --color-inverse-primary: #d4c0ff;
+  --color-on-primary-container: #fdf0fe;
+  --color-primary-fixed-dim: #f4c8f8;
+  --color-inverse-primary: #f4c8f8;
 
   --color-secondary: #00a172;
   --color-secondary-fixed: #6ffbbe;

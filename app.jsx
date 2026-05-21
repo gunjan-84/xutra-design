@@ -1,6 +1,6 @@
 // App shell — internal router + Tweaks panel + Settings drawer
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "palette": ["#7c3aed", "#9b6cf2", "#d4c0ff"],
+  "palette": ["#e16ceb", "#e890f0", "#f4c8f8"],
   "dark": false,
   "forceHold": false,
   "indexStyle": "tile"

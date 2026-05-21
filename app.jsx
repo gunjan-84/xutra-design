@@ -3,7 +3,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "palette": ["#7c3aed", "#9b6cf2", "#d4c0ff"],
   "dark": false,
   "forceHold": false,
-  "indexStyle": "hero"
+  "indexStyle": "tile"
 }/*EDITMODE-END*/;
 
 // Each palette: [primary, container, dim]. All in the purple→pink gradient,
@@ -93,19 +93,22 @@ const App = () => {
 
   return (
     <XutraContext.Provider value={{ go, goTab, goReplace, goBack, openSettings, canGoBack, brokers, feed, feedBroker, tweaks }}>
-      <div style={{ position: "relative", width: "100%", height: "100dvh", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden" }}>
-        <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
-          {content}
+      <window.IOSDevice width={402} height={874} dark={tweaks.dark}>
+        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden" }}>
+          <div style={{ height: 62, flexShrink: 0, background: "var(--color-surface)" }} />
+          <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+            {content}
+          </div>
+          <window.SettingsDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            brokers={brokers}
+            setBroker={setBroker}
+            feed={feed}
+            setFeed={setFeed}
+          />
         </div>
-        <window.SettingsDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          brokers={brokers}
-          setBroker={setBroker}
-          feed={feed}
-          setFeed={setFeed}
-        />
-      </div>
+      </window.IOSDevice>
 
       <window.TweaksPanel title="Tweaks">
         <window.TweakSection label="Color theme">

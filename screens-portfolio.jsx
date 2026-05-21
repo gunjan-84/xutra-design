@@ -55,63 +55,109 @@ function moveItem(arr, fromId, toId) {
   return next;
 }
 
+const ReorderItemContext = React.createContext(null);
+
 const Reorderable = ({ id, drag, setDrag, order, setOrder, children }) => {
   const isActive = drag.active === id;
   const isOver = drag.over === id && drag.active && drag.active !== id;
+
+  // Touch drag support — native HTML5 drag doesn't fire on touchscreens, so
+  // we mirror the same {active, over} state using touch events from the handle.
+  const startTouchDrag = React.useCallback((e) => {
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+    setDrag({ active: id, over: null });
+
+    const onMove = (ev) => {
+      const t = ev.touches && ev.touches[0] ? ev.touches[0] : ev;
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const overEl = el && el.closest ? el.closest("[data-reorder-id]") : null;
+      const overId = overEl ? overEl.getAttribute("data-reorder-id") : null;
+      setDrag(d => d.over === overId ? d : { ...d, over: overId });
+      if (ev.cancelable) ev.preventDefault();
+    };
+    const cleanup = () => {
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+      document.removeEventListener("touchcancel", onEnd);
+    };
+    const onEnd = () => {
+      setDrag(curDrag => {
+        if (curDrag.active && curDrag.over && curDrag.active !== curDrag.over) {
+          setOrder(o => moveItem(o, curDrag.active, curDrag.over));
+        }
+        return { active: null, over: null };
+      });
+      cleanup();
+    };
+    document.addEventListener("touchmove", onMove, { passive: false });
+    document.addEventListener("touchend", onEnd);
+    document.addEventListener("touchcancel", onEnd);
+  }, [id, setDrag, setOrder]);
+
   return (
-    <div
-      draggable
-      onDragStart={(e) => {
-        setDrag({ active: id, over: null });
-        try { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); } catch (_) {}
-      }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        if (drag.over !== id) setDrag(d => ({ ...d, over: id }));
-      }}
-      onDragLeave={() => setDrag(d => (d.over === id ? { ...d, over: null } : d))}
-      onDrop={(e) => {
-        e.preventDefault();
-        const from = drag.active || e.dataTransfer.getData("text/plain");
-        if (from && from !== id) setOrder(moveItem(order, from, id));
-        setDrag({ active: null, over: null });
-      }}
-      onDragEnd={() => setDrag({ active: null, over: null })}
-      style={{
-        position: "relative",
-        opacity: isActive ? 0.45 : 1,
-        transform: isActive ? "scale(0.985)" : "scale(1)",
-        transition: "opacity 120ms, transform 120ms",
-      }}
-    >
-      {isOver && (
-        <div style={{
-          position: "absolute", top: -6, left: 0, right: 0, height: 3,
-          background: "var(--color-primary)", borderRadius: 9999,
-          boxShadow: "0 0 0 4px color-mix(in oklab, var(--color-primary) 18%, transparent)",
-          zIndex: 5,
-        }} />
-      )}
-      {children}
-    </div>
+    <ReorderItemContext.Provider value={{ id, startTouchDrag }}>
+      <div
+        data-reorder-id={id}
+        draggable
+        onDragStart={(e) => {
+          setDrag({ active: id, over: null });
+          try { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); } catch (_) {}
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (drag.over !== id) setDrag(d => ({ ...d, over: id }));
+        }}
+        onDragLeave={() => setDrag(d => (d.over === id ? { ...d, over: null } : d))}
+        onDrop={(e) => {
+          e.preventDefault();
+          const from = drag.active || e.dataTransfer.getData("text/plain");
+          if (from && from !== id) setOrder(moveItem(order, from, id));
+          setDrag({ active: null, over: null });
+        }}
+        onDragEnd={() => setDrag({ active: null, over: null })}
+        style={{
+          position: "relative",
+          opacity: isActive ? 0.45 : 1,
+          transform: isActive ? "scale(0.985)" : "scale(1)",
+          transition: "opacity 120ms, transform 120ms",
+        }}
+      >
+        {isOver && (
+          <div style={{
+            position: "absolute", top: -6, left: 0, right: 0, height: 3,
+            background: "var(--color-primary)", borderRadius: 9999,
+            boxShadow: "0 0 0 4px color-mix(in oklab, var(--color-primary) 18%, transparent)",
+            zIndex: 5,
+          }} />
+        )}
+        {children}
+      </div>
+    </ReorderItemContext.Provider>
   );
 };
 
-const DragHandle = () => (
-  <span
-    aria-label="Drag to reorder"
-    title="Drag to reorder"
-    style={{
-      display: "inline-flex", alignItems: "center", justifyContent: "center",
-      padding: 4, borderRadius: 6, cursor: "grab",
-      color: "currentColor", opacity: 0.5,
-    }}
-    onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
-    onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
-  >
-    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>drag_indicator</span>
-  </span>
-);
+const DragHandle = () => {
+  const ctx = React.useContext(ReorderItemContext);
+  return (
+    <span
+      aria-label="Drag to reorder"
+      title="Drag to reorder"
+      onTouchStart={ctx ? (e) => ctx.startTouchDrag(e) : undefined}
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        padding: 4, borderRadius: 6, cursor: "grab",
+        color: "currentColor", opacity: 0.5,
+        touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+      }}
+      onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
+      onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
+    >
+      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>drag_indicator</span>
+    </span>
+  );
+};
 
 const BrokerFilterRow = ({ brokers, value, onChange, counts }) => {
   // Only show connected brokers + "All"

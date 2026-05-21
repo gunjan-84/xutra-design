@@ -33,6 +33,58 @@ function applyPalette(palette) {
 const XutraContext = React.createContext({});
 window.XutraContext = XutraContext;
 
+function mixWithWhite(hex, amount) {
+  const h = hex.replace('#', '').padEnd(6, '0');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return '#' + [r, g, b].map(c => Math.round(c + (255 - c) * amount).toString(16).padStart(2, '0')).join('');
+}
+
+function normalizeHex(v) {
+  if (/^#[0-9a-f]{3}$/i.test(v)) {
+    const [r, g, b] = v.slice(1);
+    return ('#' + r + r + g + g + b + b).toLowerCase();
+  }
+  return v.toLowerCase();
+}
+
+function CustomHexInput({ onChange }) {
+  const [hex, setHex] = React.useState('');
+  const isValid = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex);
+
+  const handleChange = (e) => {
+    let v = e.target.value.trim();
+    if (v && !v.startsWith('#')) v = '#' + v;
+    setHex(v);
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) {
+      const primary = normalizeHex(v);
+      onChange([primary, mixWithWhite(primary, 0.18), mixWithWhite(primary, 0.52)]);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{
+        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+        background: isValid ? hex : 'rgba(0,0,0,0.08)',
+        border: '0.5px solid rgba(0,0,0,0.15)',
+        transition: 'background 120ms',
+      }} />
+      <input
+        className="twk-field"
+        type="text"
+        value={hex}
+        placeholder="#e16ceb"
+        maxLength={7}
+        spellCheck={false}
+        onChange={handleChange}
+        style={{ flex: 1, fontFamily: 'monospace', letterSpacing: '0.02em' }}
+      />
+    </div>
+  );
+}
+
 const App = () => {
   const [screen, setScreen] = React.useState({ name: "home" });
   const [history, setHistory] = React.useState([]);
@@ -107,7 +159,7 @@ const App = () => {
           />
       </div>
 
-      <window.TweaksPanel title="Tweaks">
+      <window.TweaksPanel title="Tweaks" showTrigger={true}>
         <window.TweakSection label="Color theme">
           <window.TweakColor
             label="Palette"
@@ -115,6 +167,9 @@ const App = () => {
             options={PALETTE_OPTIONS}
             onChange={(p) => setTweak('palette', p)}
           />
+          <window.TweakRow label="Custom hex">
+            <CustomHexInput onChange={(p) => setTweak('palette', p)} />
+          </window.TweakRow>
           <window.TweakToggle
             label="Dark mode"
             value={tweaks.dark}

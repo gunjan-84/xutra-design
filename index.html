@@ -2,27 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Xutra — Trade Smart</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
   <link rel="stylesheet" href="tokens.css">
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body, #root {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      height: 100dvh;
-      overflow: hidden;
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--color-background, #f3f1fa);
+      min-height: 100vh;
+      box-sizing: border-box;
     }
-    #root { display: flex; flex-direction: column; }
+    #root { height: 100%; }
   </style>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -35,17 +32,18 @@
     <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
       <rect width="1200" height="800" fill="#f3f1fa" />
       <g transform="translate(600 400)">
-        <path d="M -120 80 L 0 -120 L 120 80 L 65 80 L 0 -25 L -65 80 Z" fill="#e16ceb" />
+        <path d="M -120 80 L 0 -120 L 120 80 L 65 80 L 0 -25 L -65 80 Z" fill="#7c3aed" />
         <text x="160" y="40" font-family="Plus Jakarta Sans, system-ui, sans-serif"
               font-size="120" font-weight="800" letter-spacing="-6" fill="#1d1c2d">xutra</text>
       </g>
     </svg>
   </template>
 </head>
-<body style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+<body style="font-family: &quot;Plus Jakarta Sans&quot;">
   <div id="root"></div>
 
-<script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
   <script type="text/babel" src="components.jsx"></script>
   <script type="text/babel" src="settings-drawer.jsx"></script>
   <script type="text/babel" src="screens-main.jsx"></script>

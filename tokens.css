@@ -14,13 +14,13 @@
   --color-outline: #7d758c;
   --color-outline-variant: #c8c3d7;
 
-  /* Primary (overridden via Tweaks panel) */
-  --color-primary: #e16ceb;
-  --color-primary-container: #e890f0;
+  /* Primary (violet by default; overridden via Tweaks panel) */
+  --color-primary: #7c3aed;
+  --color-primary-container: #9b6cf2;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #fdf0fe;
-  --color-primary-fixed-dim: #f4c8f8;
-  --color-inverse-primary: #f4c8f8;
+  --color-on-primary-container: #f3eeff;
+  --color-primary-fixed-dim: #d4c0ff;
+  --color-inverse-primary: #d4c0ff;
 
   --color-secondary: #00a172;
   --color-secondary-fixed: #6ffbbe;
@@ -174,19 +174,22 @@ input { font-family: inherit; }
 .topbar-icon-btn:hover { background: var(--color-surface-container-low); }
 .topbar-icon-btn.primary { color: var(--color-primary); }
 .brand-wordmark {
-  font-weight: 800; font-size: var(--text-headline-lg); letter-spacing: -0.05em;
+  font-family: "Montserrat", "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 800; font-size: var(--text-headline-md); letter-spacing: -0.03em;
   color: var(--color-on-surface);
   text-decoration: none;
-  display: inline-flex; align-items: center; gap: 0.32em;
+  display: inline-flex; align-items: center; gap: 0.28em;
   line-height: 1;
 }
 .brand-wordmark::before {
   content: "";
-  width: 0.72em; height: 0.78em;
-  background: var(--color-primary);
-  clip-path: polygon(50% 0%, 100% 100%, 64% 100%, 50% 48%, 36% 100%, 0% 100%);
+  width: 1.8em; height: 1.8em;
+  background-color: var(--color-primary);
+  -webkit-mask: url("xutra-logo.png") center / contain no-repeat;
+          mask: url("xutra-logo.png") center / contain no-repeat;
   display: inline-block;
-  transform: translateY(0.03em);
+  transform: translateY(0.02em);
+  flex-shrink: 0;
 }
 .topbar-divider { width: 1px; height: 16px; background: var(--color-outline-variant); margin: 0 var(--spacing-xs); }
 .topbar-actions { display: flex; align-items: center; gap: var(--spacing-xs); }
@@ -195,8 +198,8 @@ input { font-family: inherit; }
 .bottom-nav {
   flex-shrink: 0;
   display: flex; justify-content: space-around; align-items: flex-start;
-  padding-top: 6px;
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  height: 88px;
+  padding-top: 6px; padding-bottom: 28px;
   background: var(--color-surface);
   border-top: 1px solid var(--color-outline-variant);
   position: relative;
@@ -322,7 +325,7 @@ input { font-family: inherit; }
   position: absolute; bottom: 0; left: 0; right: 0;
   background: var(--color-surface);
   border-top: 1px solid var(--color-outline-variant);
-  padding: var(--spacing-md) var(--spacing-md) calc(max(env(safe-area-inset-bottom, 0px), 8px) + var(--spacing-md));
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 24px);
   z-index: 30;
 }
 

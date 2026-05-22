@@ -152,7 +152,7 @@ const IndexTicker = ({ indices }) => (
     border: "1px solid var(--color-outline-variant)",
     borderRadius: 12,
     overflowX: "auto",
-  }} className="no-scrollbar">
+  }} className="no-scrollbar" data-no-page-swipe>
     {indices.map((i, idx) => {
       const up = i.pct >= 0;
       const accent = up ? "var(--color-secondary)" : "var(--color-error)";
@@ -209,7 +209,7 @@ const HomeScreen = ({ go }) => {
           </div>
         ) : (
           <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, padding: "0 16px" }}
-               className="no-scrollbar">
+               className="no-scrollbar" data-no-page-swipe>
             {homeIndices.map(i => {
               if (indexStyle === "tile")  return <IndexTile  key={i.name} i={i} />;
               if (indexStyle === "spark") return <IndexSpark key={i.name} i={i} />;

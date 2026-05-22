@@ -146,6 +146,7 @@ const SwipeableInstrumentRow = ({ inst, go }) => {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={reset}
+        data-no-page-swipe
         onClick={(e) => {
           if (moved.current) { e.preventDefault(); return; }
           go({ name: "instrument", symbol: inst.symbol });

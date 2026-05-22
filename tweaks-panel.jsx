@@ -139,16 +139,6 @@ const __TWEAKS_STYLE = `
   .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
   .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
 
-  .twk-trigger{position:fixed;right:16px;bottom:80px;z-index:2147483645;
-    width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;
-    background:rgba(250,249,247,.85);color:#29261b;
-    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-    border:.5px solid rgba(0,0,0,.1);
-    box-shadow:0 4px 16px rgba(0,0,0,.18);
-    display:flex;align-items:center;justify-content:center;
-    font-size:20px;transition:transform .12s,box-shadow .12s}
-  .twk-trigger:active{transform:scale(.93);box-shadow:0 2px 8px rgba(0,0,0,.15)}
-
   .twk-chips{display:flex;gap:6px}
   .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
     padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
@@ -193,7 +183,7 @@ function useTweaks(defaults) {
 // The close button posts __edit_mode_dismissed so the host's toolbar toggle
 // flips off in lockstep; the host echoes __deactivate_edit_mode back which
 // is what actually hides the panel.
-function TweaksPanel({ title = 'Tweaks', noDeckControls = false, showTrigger = false, children }) {
+function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
   const [open, setOpen] = React.useState(false);
   const dragRef = React.useRef(null);
   // Auto-inject a rail toggle when a <deck-stage> is on the page. The
@@ -296,15 +286,7 @@ function TweaksPanel({ title = 'Tweaks', noDeckControls = false, showTrigger = f
     window.addEventListener('mouseup', up);
   };
 
-  if (!open) {
-    if (!showTrigger) return null;
-    return (
-      <>
-        <style>{__TWEAKS_STYLE}</style>
-        <button className="twk-trigger" aria-label="Open tweaks" onClick={() => setOpen(true)}>🎨</button>
-      </>
-    );
-  }
+  if (!open) return null;
   return (
     <>
       <style>{__TWEAKS_STYLE}</style>

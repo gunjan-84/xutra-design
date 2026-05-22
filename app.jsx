@@ -1,6 +1,6 @@
 // App shell — internal router + Tweaks panel + Settings drawer
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "palette": ["#e16ceb", "#e890f0", "#f4c8f8"],
+  "palette": ["#7c3aed", "#9b6cf2", "#d4c0ff"],
   "dark": false,
   "forceHold": false,
   "indexStyle": "tile"
@@ -33,57 +33,8 @@ function applyPalette(palette) {
 const XutraContext = React.createContext({});
 window.XutraContext = XutraContext;
 
-function mixWithWhite(hex, amount) {
-  const h = hex.replace('#', '').padEnd(6, '0');
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return '#' + [r, g, b].map(c => Math.round(c + (255 - c) * amount).toString(16).padStart(2, '0')).join('');
-}
-
-function normalizeHex(v) {
-  if (/^#[0-9a-f]{3}$/i.test(v)) {
-    const [r, g, b] = v.slice(1);
-    return ('#' + r + r + g + g + b + b).toLowerCase();
-  }
-  return v.toLowerCase();
-}
-
-function CustomHexInput({ onChange }) {
-  const [hex, setHex] = React.useState('');
-  const isValid = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex);
-
-  const handleChange = (e) => {
-    let v = e.target.value.trim();
-    if (v && !v.startsWith('#')) v = '#' + v;
-    setHex(v);
-    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) {
-      const primary = normalizeHex(v);
-      onChange([primary, mixWithWhite(primary, 0.18), mixWithWhite(primary, 0.52)]);
-    }
-  };
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{
-        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-        background: isValid ? hex : 'rgba(0,0,0,0.08)',
-        border: '0.5px solid rgba(0,0,0,0.15)',
-        transition: 'background 120ms',
-      }} />
-      <input
-        className="twk-field"
-        type="text"
-        value={hex}
-        placeholder="#e16ceb"
-        maxLength={7}
-        spellCheck={false}
-        onChange={handleChange}
-        style={{ flex: 1, fontFamily: 'monospace', letterSpacing: '0.02em' }}
-      />
-    </div>
-  );
-}
+// Tab order for swipe navigation (matches BottomNav order in components.jsx)
+const TAB_ORDER = ["home", "watchlist", "portfolio", "orders", "account"];
 
 const App = () => {
   const [screen, setScreen] = React.useState({ name: "home" });
@@ -143,23 +94,127 @@ const App = () => {
   const feedBroker = brokers.find(b => b.id === feed && b.connected) || null;
   const canGoBack = history.length > 0;
 
+  // ── Swipe-between-tabs ──
+  // Horizontal flick on a tab screen navigates to the prev/next tab.
+  // Skipped if the gesture starts inside something with [data-no-page-swipe]
+  // (row swipe-to-trade, horizontal scrollers, chips, etc.) or if we're on
+  // a drill-down screen (instrument / trade).
+  const swipeRef = React.useRef({});
+  const [swipeDx, setSwipeDx] = React.useState(0);
+  const [swiping, setSwiping] = React.useState(false);
+
+  const onTouchStart = React.useCallback((e) => {
+    if (!TAB_ORDER.includes(screen.name)) return;
+    if (e.target.closest && e.target.closest('[data-no-page-swipe]')) return;
+    const t = e.touches[0];
+    swipeRef.current = {
+      x0: t.clientX, y0: t.clientY,
+      t0: Date.now(), active: true, decided: false, dx: 0,
+    };
+  }, [screen.name]);
+
+  const onTouchMove = React.useCallback((e) => {
+    const s = swipeRef.current;
+    if (!s.active) return;
+    const t = e.touches[0];
+    const dx = t.clientX - s.x0;
+    const dy = t.clientY - s.y0;
+    if (!s.decided) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      // Need to be clearly more horizontal than vertical to claim the gesture
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) { s.active = false; setSwiping(false); setSwipeDx(0); return; }
+      s.decided = true;
+      setSwiping(true);
+    }
+    s.dx = dx;
+    // Edge resistance at the ends of the tab list
+    const idx = TAB_ORDER.indexOf(screen.name);
+    const atStart = idx <= 0 && dx > 0;
+    const atEnd   = idx >= TAB_ORDER.length - 1 && dx < 0;
+    const shown = (atStart || atEnd) ? dx * 0.25 : dx;
+    setSwipeDx(Math.max(-180, Math.min(180, shown)));
+  }, [screen.name]);
+
+  const onTouchEnd = React.useCallback(() => {
+    const s = swipeRef.current;
+    if (!s.active || !s.decided) {
+      swipeRef.current = {}; setSwiping(false); setSwipeDx(0); return;
+    }
+    const dt = Date.now() - s.t0;
+    const dx = s.dx || 0;
+    const idx = TAB_ORDER.indexOf(screen.name);
+    const fast = Math.abs(dx) > 40 && dt < 280;
+    const FAR  = 70;
+    let nextIdx = idx;
+    if (dx <= -FAR || (fast && dx < 0)) nextIdx = Math.min(TAB_ORDER.length - 1, idx + 1);
+    else if (dx >= FAR || (fast && dx > 0)) nextIdx = Math.max(0, idx - 1);
+    swipeRef.current = {};
+    setSwiping(false); setSwipeDx(0);
+    if (nextIdx !== idx) goTab({ name: TAB_ORDER[nextIdx] });
+  }, [screen.name, goTab]);
+
+  const contentTransform = swiping
+    ? `translateX(${swipeDx}px)`
+    : "translateX(0)";
+  const contentTransition = swiping ? "none" : "transform 220ms cubic-bezier(.2,.7,.2,1)";
+
   return (
     <XutraContext.Provider value={{ go, goTab, goReplace, goBack, openSettings, canGoBack, brokers, feed, feedBroker, tweaks }}>
-      <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "var(--color-background)", overflow: "hidden", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", paddingLeft: "env(safe-area-inset-left)", paddingRight: "env(safe-area-inset-right)" }}>
-          <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+      <div style={{
+        position: "fixed", inset: 0,
+        display: "flex", flexDirection: "column",
+        background: "var(--color-background)",
+        overflow: "hidden",
+      }}>
+        <div
+          style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
+        >
+          <div style={{
+            position: "absolute", inset: 0,
+            display: "flex", flexDirection: "column",
+            transform: contentTransform,
+            transition: contentTransition,
+            willChange: "transform",
+          }}>
             {content}
           </div>
-          <window.SettingsDrawer
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            brokers={brokers}
-            setBroker={setBroker}
-            feed={feed}
-            setFeed={setFeed}
-          />
+        </div>
+        <window.SettingsDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          brokers={brokers}
+          setBroker={setBroker}
+          feed={feed}
+          setFeed={setFeed}
+        />
+        <button
+          type="button"
+          aria-label="Open Tweaks"
+          title="Tweaks"
+          onClick={() => window.postMessage({ type: '__activate_edit_mode' }, '*')}
+          style={{
+            position: "absolute",
+            right: 16, bottom: 88,
+            width: 48, height: 48,
+            borderRadius: 9999,
+            border: "1px solid var(--color-outline-variant)",
+            background: "var(--color-surface)",
+            color: "var(--color-primary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
+            cursor: "pointer",
+            zIndex: 50,
+          }}
+        >
+          <window.Icon name="tune" size={22} />
+        </button>
       </div>
 
-      <window.TweaksPanel title="Tweaks" showTrigger={true}>
+      <window.TweaksPanel title="Tweaks">
         <window.TweakSection label="Color theme">
           <window.TweakColor
             label="Palette"
@@ -167,9 +222,6 @@ const App = () => {
             options={PALETTE_OPTIONS}
             onChange={(p) => setTweak('palette', p)}
           />
-          <window.TweakRow label="Custom hex">
-            <CustomHexInput onChange={(p) => setTweak('palette', p)} />
-          </window.TweakRow>
           <window.TweakToggle
             label="Dark mode"
             value={tweaks.dark}

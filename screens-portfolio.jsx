@@ -171,7 +171,7 @@ const BrokerFilterRow = ({ brokers, value, onChange, counts }) => {
   // Only show connected brokers + "All"
   const visible = [{ id: "all", name: "All", monogram: "∗" }, ...brokers.filter(b => b.connected)];
   return (
-    <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 0", flexShrink: 0 }} className="no-scrollbar">
+    <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 0", flexShrink: 0 }} className="no-scrollbar" data-no-page-swipe>
       {visible.map(b => {
         const active = value === b.id;
         const total = counts[b.id] || 0;

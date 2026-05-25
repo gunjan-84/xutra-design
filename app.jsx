@@ -1,20 +1,21 @@
 // App shell — internal router + Tweaks panel + Settings drawer
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "palette": ["#7c3aed", "#9b6cf2", "#d4c0ff"],
+  "palette": ["#ec4899", "#f06cae", "#ffd0e3"],
   "dark": false,
   "forceHold": false,
   "indexStyle": "tile"
 }/*EDITMODE-END*/;
 
-// Each palette: [primary, container, dim]. All in the purple→pink gradient,
-// curated for trading-app legibility on light and dark surfaces.
+// Each palette: [primary, container, dim]. Top 3 are the recommended picks
+// (Violet — default, Deep Violet — serious, Hot Pink — distinctive), followed
+// by the wider purple→pink range.
 const PALETTE_OPTIONS = [
-  ["#6d28d9", "#8b5cf6", "#c4b5fd"], // Deep Violet
-  ["#7c3aed", "#9b6cf2", "#d4c0ff"], // Violet
+  ["#7c3aed", "#9b6cf2", "#d4c0ff"], // Violet ★ default
+  ["#6d28d9", "#8b5cf6", "#c4b5fd"], // Deep Violet ★ serious
+  ["#ec4899", "#f06cae", "#ffd0e3"], // Hot Pink ★ distinctive
   ["#9333ea", "#b06bf0", "#e0c8ff"], // Purple
   ["#a855f7", "#c084fc", "#e9d5ff"], // Bright Purple
   ["#c026d3", "#d65ce0", "#f6c4ff"], // Magenta
-  ["#ec4899", "#f06cae", "#ffd0e3"], // Hot Pink
   ["#f472b6", "#f9a8d4", "#fce7f3"], // Soft Pink
   ["#e11d48", "#f06b8e", "#ffd0e0"], // Rose
 ];

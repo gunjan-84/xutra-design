@@ -2,9 +2,10 @@
 // and pick which one provides the live price feed.
 
 const BROKERS_SEED = [
-  { id: "zerodha", name: "Zerodha",  monogram: "Z", brandHue: "#387ed1", logo: "https://cdn.xutra.in/brokers_logo/ZERODHA.png", tagline: "NSE · BSE · MCX",       connected: true,  lastSync: "Just now",  funds: { available: 142084, used: 38420, opening: 180504 } },
-  { id: "upstox",  name: "Upstox",   monogram: "U", brandHue: "#7b2bf9", logo: "https://cdn.xutra.in/brokers_logo/UPSTOX.png",  tagline: "Discount brokerage",  connected: true,  lastSync: "2 min ago", funds: { available:  85500, used: 14200, opening:  99700 } },
-  { id: "groww",   name: "Groww",    monogram: "G", brandHue: "#00d09c", logo: "https://cdn.xutra.in/brokers_logo/GROWW.png",   tagline: "Stocks · F&O · MF",   connected: false, lastSync: "—",          funds: { available:      0, used:     0, opening:      0 } },
+  { id: "zerodha", name: "Zerodha",       monogram: "Z", brandHue: "#387ed1", logo: "https://cdn.xutra.in/brokers_logo/ZERODHA.png",      tagline: "NSE · BSE · MCX",       connected: true,  lastSync: "Just now",  funds: { available: 142084, used: 38420, opening: 180504 } },
+  { id: "upstox",  name: "Upstox",        monogram: "U", brandHue: "#7b2bf9", logo: "https://cdn.xutra.in/brokers_logo/UPSTOX.png",       tagline: "Discount brokerage",  connected: true,  lastSync: "2 min ago", funds: { available:  85500, used: 14200, opening:  99700 } },
+  { id: "arham",   name: "Arham Wealth",  monogram: "A", brandHue: "#c9a227", logo: "https://cdn.xutra.in/brokers_logo/ARHAM_WEALTH.png", tagline: "Full-service · advisory", connected: false, lastSync: "—",      funds: { available:      0, used:     0, opening:      0 } },
+  { id: "groww",   name: "Groww",         monogram: "G", brandHue: "#00d09c", logo: "https://cdn.xutra.in/brokers_logo/GROWW.png",        tagline: "Stocks · F&O · MF",   connected: false, lastSync: "—",          funds: { available:      0, used:     0, opening:      0 } },
 ];
 
 function useBrokers() {

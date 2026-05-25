@@ -178,7 +178,159 @@ const IndexTicker = ({ indices }) => (
   </div>
 );
 
-const HOME_SECTIONS_DEFAULT_ORDER = ["indices", "funds", "gainers", "losers", "health"];
+const HOME_SECTIONS_DEFAULT_ORDER = ["indices", "funds", "events", "news", "gainers", "losers", "health"];
+
+// Upcoming corporate / market events shown on home. Real-feeling data so the
+// card looks lived-in; would come from an API in production.
+const UPCOMING_EVENTS = [
+  { kind: "earnings",  symbol: "RELIANCE",   title: "Q4 Results",         when: "Tomorrow",  meta: "Post-market"   },
+  { kind: "dividend",  symbol: "TCS",        title: "Final dividend ₹73", when: "In 3 days", meta: "Ex-date"       },
+  { kind: "ipo",       symbol: "BHARTI HEX", title: "IPO opens",          when: "Mon, 28",   meta: "₹486 – 510"    },
+  { kind: "expiry",    symbol: "NIFTY",      title: "Monthly F&O expiry", when: "Thu, 31",   meta: "Index futures" },
+];
+
+const EVENT_ICON = { earnings: "summarize", dividend: "payments", ipo: "rocket_launch", expiry: "event_repeat" };
+
+const LATEST_NEWS = [
+  { source: "Mint",       tag: "MARKETS",  title: "Sensex hits fresh record as IT, banks rally; Nifty above 22,500",  when: "12 min ago", chip: "up"   },
+  { source: "Bloomberg",  tag: "RELIANCE", title: "Reliance Jio launches AI-powered cloud platform for enterprises",   when: "38 min ago", chip: null   },
+  { source: "ETMarkets",  tag: "IPO",      title: "Bharti Hexacom IPO subscribed 5.6x on final day; GMP at ₹42",       when: "1 hr ago",   chip: "up"   },
+  { source: "Reuters",    tag: "OIL",      title: "Brent slips below $82 as US inventories swell unexpectedly",         when: "2 hr ago",   chip: "down" },
+];
+
+const NewsCard = ({ handle }) => (
+  <section style={{ padding: "0 16px" }}>
+    <div style={{
+      borderRadius: 14,
+      border: "1px solid var(--color-outline-variant)",
+      background: "var(--color-surface-container-lowest)",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "14px 16px 10px",
+      }}>
+        <span style={{ fontSize: 17, fontWeight: 700 }}>Latest News</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="font-label-caps"
+                  style={{ background: "transparent", border: "none", color: "var(--color-primary)", cursor: "pointer", padding: 0 }}>
+            VIEW ALL
+          </button>
+          {handle}
+        </div>
+      </div>
+      <div>
+        {LATEST_NEWS.map((n, idx) => {
+          const chipColor = "var(--color-primary)";
+          return (
+            <div key={idx}
+                 style={{
+                   display: "flex", alignItems: "flex-start", gap: 12,
+                   padding: "12px 16px",
+                   borderTop: "1px solid var(--color-outline-variant)",
+                   cursor: "pointer",
+                 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: "color-mix(in oklab, var(--color-primary) 14%, transparent)",
+                color: "var(--color-primary)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <window.Icon name="article" size={20} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <span className="font-label-caps" style={{
+                    fontSize: 9,
+                    padding: "2px 6px", borderRadius: 4,
+                    color: chipColor,
+                    background: "color-mix(in oklab, " + chipColor + " 14%, transparent)",
+                  }}>{n.tag}</span>
+                  <span style={{ fontSize: 11, color: "var(--color-on-surface-variant)" }}>
+                    {n.source} · {n.when}
+                  </span>
+                </div>
+                <div style={{
+                  fontSize: 13, fontWeight: 600, lineHeight: 1.35,
+                  color: "var(--color-on-surface)",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  textWrap: "pretty",
+                }}>{n.title}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+);
+
+const EventsCard = ({ handle }) => (
+  <section style={{ padding: "0 16px" }}>
+    <div style={{
+      borderRadius: 14,
+      border: "1px solid var(--color-outline-variant)",
+      background: "var(--color-surface-container-lowest)",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "14px 16px 10px",
+      }}>
+        <span style={{ fontSize: 17, fontWeight: 700 }}>Upcoming Events</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="font-label-caps"
+                  style={{ background: "transparent", border: "none", color: "var(--color-primary)", cursor: "pointer", padding: 0 }}>
+            VIEW ALL
+          </button>
+          {handle}
+        </div>
+      </div>
+      <div>
+        {UPCOMING_EVENTS.map((e, idx) => {
+          const accentColor = "var(--color-primary)";
+          return (
+            <div key={e.symbol + e.kind}
+                 style={{
+                   display: "flex", alignItems: "center", gap: 12,
+                   padding: "12px 16px",
+                   borderTop: idx === 0 ? "1px solid var(--color-outline-variant)" : "1px solid var(--color-outline-variant)",
+                   cursor: "pointer",
+                 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: "color-mix(in oklab, " + accentColor + " 14%, transparent)",
+                color: accentColor,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <window.Icon name={EVENT_ICON[e.kind] || "event"} size={20} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{e.symbol}</span>
+                  <span className="font-label-caps" style={{
+                    fontSize: 9, color: accentColor,
+                    padding: "2px 6px", borderRadius: 4,
+                    background: "color-mix(in oklab, " + accentColor + " 14%, transparent)",
+                  }}>{e.kind}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--color-on-surface-variant)", marginTop: 2 }}>
+                  {e.title} · {e.meta}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div className="font-data-mono" style={{ fontSize: 13, fontWeight: 600 }}>{e.when}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+);
 
 const HomeScreen = ({ go }) => {
   const ctx = React.useContext(window.XutraContext);
@@ -186,7 +338,7 @@ const HomeScreen = ({ go }) => {
   const gainers = [...watchlist].sort((a, b) => b.changePct - a.changePct).slice(0, 3);
   const losers = [...watchlist].sort((a, b) => a.changePct - b.changePct).slice(0, 3);
 
-  const [order, setOrder] = window.usePersistedOrder("xutra.home.order", HOME_SECTIONS_DEFAULT_ORDER);
+  const [order, setOrder] = window.usePersistedOrder("xutra.home.order.v5", HOME_SECTIONS_DEFAULT_ORDER);
   const [drag, setDrag] = React.useState({ active: null, over: null });
 
   const Handle = window.DragHandle;
@@ -303,6 +455,8 @@ const HomeScreen = ({ go }) => {
         <MoverCard title="Top Gainers" items={gainers} positive go={go} handle={<Handle />} />
       </section>
     ),
+    events: <EventsCard handle={<Handle />} />,
+    news: <NewsCard handle={<Handle />} />,
     losers: (
       <section style={{ padding: "0 16px" }}>
         <MoverCard title="Top Losers" items={losers} positive={false} go={go} handle={<Handle />} />

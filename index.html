@@ -20,6 +20,81 @@
       box-sizing: border-box;
     }
     #root { height: 100%; }
+
+    /* ── Desktop: render the app inside a centred phone frame ── */
+    @media (min-width: 768px) {
+      html {
+        background: #0c0c1a;
+        height: auto;
+      }
+      html, body { height: auto; }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #0c0c1a;
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% 0%,
+            rgba(124, 58, 237, 0.18) 0%, transparent 65%);
+        padding: 48px 24px;
+        box-sizing: border-box;
+      }
+      #root {
+        width: 402px;
+        height: 874px;
+        border-radius: 48px;
+        overflow: hidden;
+        flex-shrink: 0;
+        position: relative;
+        /* Causes position:fixed children to be relative to #root, not viewport */
+        transform: translateZ(0);
+        box-shadow:
+          0 0 0 1.5px rgba(255, 255, 255, 0.1),   /* glass inner edge   */
+          0 0 0 11px #16162a,                        /* phone body colour  */
+          0 0 0 12.5px rgba(255, 255, 255, 0.04),   /* outer rim          */
+          0 60px 120px rgba(0, 0, 0, 0.65),          /* main drop shadow   */
+          0 24px 48px rgba(0, 0, 0, 0.35);           /* ambient shadow     */
+      }
+      /* Status-bar spacer: push app content below the Dynamic Island area.
+         On a real iPhone the top safe-area inset is ~59px. */
+      #root > div:first-child {
+        top: 59px !important;
+      }
+      /* Give the status-bar strip the app's own background so it blends in */
+      #root {
+        background: var(--color-background, #f3f1fa);
+      }
+
+      /* Dynamic Island */
+      #root::before {
+        content: '';
+        position: absolute;
+        top: 11px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 126px;
+        height: 37px;
+        border-radius: 24px;
+        background: #000;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      /* Home indicator */
+      #root::after {
+        content: '';
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 139px;
+        height: 5px;
+        border-radius: 100px;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        pointer-events: none;
+      }
+    }
   </style>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
